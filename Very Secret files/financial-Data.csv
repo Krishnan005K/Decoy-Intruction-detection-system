@@ -1,0 +1,6 @@
+Transaction_ID,Account_Number,Transaction_Date,Transaction_Amount,Transaction_Type,Merchant_Name,Currency
+TXN-001,ACC1234567,1/15/2023,1500.5,Credit,Amazon,USD
+TXN-002,ACC2345678,2/10/2023,3000.75,Debit,Walmart,USD
+TXN-003,ACC3456789,3/5/2023,1200,Debit,Target,USD
+TXN-004,ACC4567890,4/20/2023,2200.25,Credit,Costco,USD
+TXN-005,ACC5678901,5/15/2023,4100.1,Credit,Best Buy,USD
