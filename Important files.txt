@@ -1,0 +1,588 @@
+EXP 01
+
+1) Installation of Hadoop
+
+>>Open Ubuntu
+	
+	sudo su
+	sudo apt update -y
+	sudo apt install openjdk-11-jdk -y
+	cd /usr/local
+	sudo wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+	
+	>>>>when the above link not start the dowmload use this
+
+	sudo wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz 
+
+	sudo tar -xvzf hadoop-3.3.6.tar.gz
+	sudo mv hadoop-3.3.6 hadoop 
+	sudo nano ~/.bashrc
+	>>paste in bash
+		export HADOOP_HOME=/usr/local/hadoop 
+		export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin 
+		export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::") 
+		export PATH=$PATH:$JAVA_HOME/bin
+	>> ctrl+x
+	source ~/.bashrc 
+	hadoop version
+	
+if command apt shows error ,use yum instead of apt
+
+
+EXP 02
+
+2) Hadoop commands
+
+sudo su
+
+>>create directory 
+	hdfs dfs -mkdir /cse (dirname)
+>>list directories
+	hdfs dfs -ls /
+>>create file
+	nano example.txt
+	hdfs dfs -put example.txt /cse
+>>viewing file content in hdfs
+	hdfs dfs -cat example.txt
+>>delete file from dir
+	hdfs dfs -rm /cse/example.txt
+>>check diskusage of hdfs dir
+	hdfs dfs -du -h
+
+create another dir (cse1)
+>>copy contents
+	nano ex1.txt   ====> hi everyone
+	hdfs dfs -cp ex1.txt ex2.txt
+>>move contents
+	hdfs dfs -mkdir /a
+	nano file.txt   ===>hi
+	hdfs dfs -put file.txt /a
+	hdfs dfs -mkdir /b
+	hdfs dfs -mv /a/file.txt /b  *move file in a to b*
+	hdfs dfs -mv /a /b  *move dir a to b*
+>>remove directory
+	hdfs dfs -rm -r /cse
+
+
+EXP 03 
+
+3) Matrix Multiplication
+	Two approach available ,
+	1->with Map Reducer
+	2->Without Map Reducer
+
+Apprach 1
+nano MatrixReader.java
+//MatrixReader
+
+import java.io.*;
+import java.io.FileNotFoundException;
+import java.util.*;
+
+class MatrixReader {
+    public static void main(String[] args) {
+        try {
+            // Reading matrices from a file
+            Scanner scanner = new Scanner(new File("matrices.txt"));
+
+            // Read dimensions of the first matrix
+            int rows1 = scanner.nextInt();
+            int cols1 = scanner.nextInt();
+            int[][] matrix1 = new int[rows1][cols1];
+
+            // Fill the first matrix
+            for (int i = 0; i < rows1; i++) {
+                for (int j = 0; j < cols1; j++) {
+                    matrix1[i][j] = scanner.nextInt();
+                }
+            }
+
+            // Read dimensions of the second matrix
+            int rows2 = scanner.nextInt();
+            int cols2 = scanner.nextInt();
+            int[][] matrix2 = new int[rows2][cols2];
+
+            // Fill the second matrix
+            for (int i = 0; i < rows2; i++) {
+                for (int j = 0; j < cols2; j++) {
+                    matrix2[i][j] = scanner.nextInt();
+                }
+            }
+
+            scanner.close();
+
+            // Pass matrices to another class for multiplication
+            MatrixMultiplier.multiplyAndPrint(matrix1, matrix2);
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Input file not found.");
+        }
+    }
+}
+
+//Press Ctrl s
+//Press Ctrl x
+
+nano MatrixMultiplier.java
+
+//MatrixMultiplier
+
+import java.io.*;
+import java.io.FileNotFoundException;
+import java.util.*;
+
+public class MatrixMultiplier {
+
+    public static void multiplyAndPrint(int[][] matrix1, int[][] matrix2) {
+        int rows1 = matrix1.length;
+        int cols1 = matrix1[0].length;
+        int rows2 = matrix2.length;
+        int cols2 = matrix2[0].length;
+
+        // Check if multiplication is possible
+        if (cols1 != rows2) {
+            System.out.println("Matrix multiplication not possible. Number of columns in the first matrix must equal the number of rows in the second matrix.");
+            return;
+        }
+
+        // Resultant matrix dimensions
+        int[][] result = new int[rows1][cols2];
+
+        // Perform matrix multiplication
+        for (int i = 0; i < rows1; i++) {
+            for (int j = 0; j < cols2; j++) {
+                for (int k = 0; k < cols1; k++) {
+                    result[i][j] += matrix1[i][k] * matrix2[k][j];
+                }
+            }
+        }
+
+        // Print the result
+        System.out.println("Result of matrix multiplication:");
+        for (int i = 0; i < rows1; i++) {
+            for (int j = 0; j < cols2; j++) {
+                System.out.print(result[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+
+//Press Ctrl s
+//Press Ctrl x
+
+nano matrices.txt
+
+matrices.txt
+2 3
+1 2 3
+4 5 6
+3 2
+7 8
+9 10
+11 12
+
+//Press Ctrl s
+//Press Ctrl x
+
+
+javac MatrixReader.java MatrixMultiplier.java
+java MatrixReader
+
+
+============================(OR)=====================================
+Approach 02
+
+1)nano MatrixMultiplication.java
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class MatrixMultiplication {
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(new File("matrices.txt"))) {
+            int rows1 = scanner.nextInt(), cols1 = scanner.nextInt();
+            int[][] matrix1 = new int[rows1][cols1];
+            for (int i = 0; i < rows1; i++)
+                for (int j = 0; j < cols1; j++)
+                    matrix1[i][j] = scanner.nextInt();
+
+            int rows2 = scanner.nextInt(), cols2 = scanner.nextInt();
+            int[][] matrix2 = new int[rows2][cols2];
+            for (int i = 0; i < rows2; i++)
+                for (int j = 0; j < cols2; j++)
+                    matrix2[i][j] = scanner.nextInt();
+
+            if (cols1 != rows2) {
+                System.out.println("Matrix multiplication not possible.");
+                return;
+            }
+
+            int[][] result = new int[rows1][cols2];
+            for (int i = 0; i < rows1; i++)
+                for (int j = 0; j < cols2; j++)
+                    for (int k = 0; k < cols1; k++)
+                        result[i][j] += matrix1[i][k] * matrix2[k][j];
+
+            for (int[] row : result) {
+                for (int value : row)
+                    System.out.print(value + " ");
+                System.out.println();
+            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Input file not found.");
+        }
+    }
+}
+//press ctrl+o enter ctrl+x
+
+3)nano matrices.txt
+//input
+2 3
+1 2 3
+4 5 6
+3 2
+7 8
+9 10
+11 12
+//press ctrl+o enter ctrl+x
+4)javac MatrixMultiplication.java
+5)java MatrixMultiplication
+
+
+
+
+EXP 04
+
+4)Word Counter Program
+
+WordCount.java
+
+1)nano WordCounter.java
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class WordCounter {
+    public static void main(String[] args) throws Exception {
+        Scanner scanner = new Scanner(new File(args[0]));
+        HashMap<String, Integer> wordCount = new HashMap<>();
+
+        while (scanner.hasNext()) {
+            String word = scanner.next().replaceAll("\\W", "").toLowerCase();
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
+        }
+        scanner.close();
+
+        wordCount.forEach((word, count) -> System.out.println(word + ": " + count));
+    }
+}
+
+//Press Ctrl+o Enter Ctrl+x or Press Ctrl+s Ctrl+x
+
+2)javac WordCounter.java
+
+3)nano input.txt
+
+4)java WordCounter input.txt
+
+//give any input in input.txt and u will get output
+
+
+
+
+EXP 05
+
+5)Hive Installation
+
+5) Installation of hive
+
+sudo su
+sudo apt update -y
+sudo apt install wget -y
+wget https://archive.apache.org/dist/hive/hive-3.1.3/apache-hive-3.1.3-bin.tar.gz
+tar -xzvf apache-hive-3.1.3-bin.tar.gz
+sudo mv apache-hive-3.1.3-bin /usr/local/hive
+nano ~/.bashrc 
+	export HIVE_HOME=/usr/local/hive
+	export PATH=$HIVE_HOME/bin:$PATH
+	export HADOOP_HOME=/usr/local/hadoop 
+	export PATH=$HADOOP_HOME/bin:$PATH
+	export CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath)
+	export HIVE_CONF_DIR=$HIVE_HOME/conf
+source ~/.bashrc
+hive --version
+
+
+EXP 06(A)
+
+Hbase Installation
+
+sudo su
+sudo yum update -y
+sudo yum install wget -y
+wget https://archive.apache.org/dist/hbase/2.4.15/hbase-2.4.15-bin.tar.gz
+tar -xzvf hbase-2.4.15-bin.tar.gz 
+sudo mv hbase-2.4.15 /usr/local/hbase
+nano ~/.bashrc
+	export HBASE_HOME=/usr/local/hbase
+	export PATH=$PATH:$HBASE_HOME/bin 
+	export JAVA_HOME=/usr/lib/jvm/java-1.8.0
+source ~/.bashrc
+
+cd /usr/local/hbase/conf 
+sudo nano hbase-env.sh 
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0 
+
+sudo nano hbase-site.xml 
+<configuration> 
+  <property> 
+    <name>hbase.rootdir</name> 
+    <value>file:///usr/local/hbase/data</value> 
+  </property> 
+  <property> 
+   <name>hbase.zookeeper.property.dataDir</name> 
+   <value>/usr/local/hbase/zookeeper</value> 
+  </property> 
+</configuration>
+start-hbase.sh
+
+
+
+EXP 06(B)
+
+Hbase Shell Programs
+
+sudo su 
+hbase shell 
+create 'my_table', 'my_column_family' 
+
+put 'my_table', 'row1', 'my_column_family:name', 'Alice' 
+put 'my_table', 'row1', 'my_column_family:age', '30' 
+put 'my_table', 'row2', 'my_column_family:name', 'Bob' 
+put 'my_table', 'row2', 'my_column_family:age', '25'
+
+get 'my_table', 'row1' 
+scan 'my_table' 
+
+put 'my_table', 'row1', 'my_column_family:age', '31'
+
+delete 'my_table', 'row1', 'my_column_family:age'
+deleteall 'my_table', 'row1'
+
+drop 'my_table' 
+
+
+
+
+EXP 07 
+
+Importing and Exporting Data from MySQL
+
+ sudo su 
+
+sqoop version 
+ 
+========>>>>>>>>Importing To MySQL<<<<<<<<====================
+mysql -u your_user -p 
+DESCRIBE your_database.your_table; 
+sqoop import \ 
+--connect jdbc:mysql://your-mysql-server-ip:3306/your_database \ 
+--username your_user \ 
+--password your_password \ 
+--table your_table \ 
+--hive-import \ 
+--hive-table your_hive_database.your_hive_table \ 
+--m 1 
+ hive 
+DESCRIBE your_hive_database.your_hive_table; 
+SELECT * FROM your_hive_database.your_hive_table LIMIT 10; 
+
+========>>>>>>>>Exporting To MySQL<<<<<<<<====================
+DESCRIBE your_hive_database.your_hive_table; 
+sqoop export \ 
+--connect jdbc:mysql://your-mysql-server-ip:3306/your_database \ 
+--username your_user \ 
+--password your_password \ 
+--table your_table \ 
+--export-dir /user/hive/warehouse/your_hive_table \ 
+--m 1  
+SELECT * FROM your_database.your_table LIMIT 10;
+
+
+
+
+
+
+EXP 08
+
+
+Operation with Hive Index
+
+
+sudo su 
+
+hive 
+
+CREATE TABLE employees ( 
+    
+id INT, 
+name STRING, 
+age INT, 
+department STRING 
+ ) ROW FORMAT DELIMITED 
+ FIELDS TERMINATED BY ',' 
+ STORED AS TEXTFILE; 
+LOAD DATA LOCAL INPATH '/path/to/your/employees.csv' INTO TABLE 
+employees; 
+CREATE INDEX idx_department 
+ON TABLE employees (department) 
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler' 
+WITH DEFERRED REBUILD; 
+ 
+ALTER INDEX idx_department ON employees REBUILD; 
+
+SELECT * FROM employees WHERE department = 'Sales'; 
+DROP INDEX idx_department ON employees; 
+
+
+
+
+EXP 09 
+
+Implementing Hive View 
+
+sudo su 
+hive 
+
+CREATE TABLE employees ( 
+   
+id INT, 
+name STRING, 
+age INT, 
+department STRING 
+ ) ROW FORMAT DELIMITED 
+ FIELDS TERMINATED BY ',' 
+ STORED AS TEXTFILE; 
+
+LOAD DATA LOCAL INPATH '/path/to/your/employees.csv' INTO TABLE 
+employees; 
+CREATE VIEW sales_employees AS 
+SELECT id, name, age 
+FROM employees 
+WHERE department = 'Sales'; 
+SELECT * FROM sales_employees; 
+DROP VIEW sales_employees; 
+CREATE VIEW sales_employees AS 
+SELECT id, name, age, department 
+FROM employees 
+WHERE department = 'Sales'; 
+DROP VIEW sales_employees;
+
+
+
+EXP 10
+
+Implementing Hive External Table
+
+sudo su
+hive 
+
+CREATE EXTERNAL TABLE 
+student_external ( 
+name 
+string, 
+class 
+ARRAY, 
+gender_age STRUCT, 
+subj_score MAP 
+) 
+COMMENT ' External student 
+table' ROW FORMAT 
+DELIMITED FIELDS 
+TERMINATED BY '|' 
+COLLECTION ITEMS TERMINATED BY 
+',' MAP KEYS TERMINATED BY ':' 
+STORED AS TEXTFILE; 
+LOCATION '/user/tables/students'; 
+
+LOAD DATA LOCAL INPATH 
+'/home/Hadoop/student.txt' OVERWRITE INTO 
+TABLE student_external 
+sudo nano countries.csv 
+hdfs dfs -mkdir [hdfs-directory-name] 
+hdfs dfs -put [original-file-location] [hdfs-directory-name] 
+hdfs dfs -ls [hdfs-directory-name] 
+select * from [external-table-name];
+create table if not exists [managed-table-name]( 
+[column1-name] [column1-type], [column2-name] [var2-name], ...) 
+comment '[comment]'; 
+insert overwrite table [managed-table-name] select * from [external-table-name];
+select * from [managed-table-name]; 
+
+
+
+EXP 11
+
+Aggregate Functions in Hive
+
+11) Aggregate functions
+
+>>sudo su
+>>sudo apt install openjdk-8-jdk -y
+>>sudo update-alternatives --config java
+	>>select the java 8 version using selection number 2(specified number of java 8)
+>>nano ~/.bashrc
+	export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64  >>paste this
+ctrl+s ,ctrl+x
+>>source ~/.bashrc
+>>hdfs dfs -mkdir hivedir(dir name)
+>>nano emp.csv
+	Id, Name, Salary, Age, Gender
+	1,John Doe,55000.0,30,M
+	2,Jane Smith,62000.5,28,F
+	3,Alan Brown,45000.75,35,M
+	4,Mary Johnson,72000.0,40,F
+	5,Chris Lee,50000.0,27,M
+>>hdfs dfs -put emp.csv /hivedir
+hive (run this)
+(paste this)
+   CREATE EXTERNAL TABLE employee ( 
+   Id INT, 
+   Name STRING, 
+   Salary FLOAT, 
+   Age INT, 
+   Gender STRING 
+) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+LOCATION '/hivedir';
+
+SELECT * FROM employee;
+>>click enter 
+
+// SUM Functions : - 
+ SELECT SUM(Salary) FROM employee;
+SELECT SUM(DISTINCT Salary) FROM employee;
+SELECT Age, SUM(Salary) FROM employee GROUP BY Age;
+ // MAX Functions : - 
+SELECT MAX(Salary) FROM employee;
+ // MIN Functions : - 
+SELECT MIN(Salary) FROM employee;
+ // Standard Deviation : - 
+SELECT STDDEV_SAMP(Salary) FROM employee;
+AVG Functions : - 
+SELECT AVG(Salary) FROM employee;
+SELECT Age, AVG(Salary) FROM employee GROUP BY Age;
+ // COUNT Functions :- 
+SELECT COUNT(*) FROM employee;
+ SELECT COUNT(Salary) FROM employee;
+SELECT COUNT(DISTINCT Gender, Salary) FROM employee;
+
